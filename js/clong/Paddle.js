@@ -24,20 +24,23 @@ class Paddle {
     move() {
         //player 1 paddle movement (W/S)
         if (this.player === 1) {
-            if (keyIsDown(87) && !keyIsDown(83)) {
+            if (keyIsDown(87) && !keyIsDown(83) || goUp) {
                 this.vy -= this.accel;
-            } else if (keyIsDown(83) && !keyIsDown(87)) {
+            } else if ((keyIsDown(83) && !keyIsDown(87)) || mostrecentword === "down") {
                 this.vy += this.accel;
             } else if ((!keyIsDown(87) && !keyIsDown(83)) || (keyIsDown(87) && keyIsDown(83))) {
                 this.vy /= 1.03;
             }
         } else if (this.player === 2) {
             //player 2 paddle movement (Up/Down arrow keys)
-            if (keyIsDown(38) && !keyIsDown(40)) {
+            // console.log(`ball: ${game.ball.y}`);
+            // let temp = this.y + this.height / 2
+            // console.log(`paddle: ${temp}`);
+            if ((game.ball.y + game.ball.size / 2) <= (this.y + this.height / 2)) {
                 this.vy -= this.accel;
-            } else if (keyIsDown(40) && !keyIsDown(38)) {
+            } else {
                 this.vy += this.accel;
-            } else if (!keyIsDown(40) && !keyIsDown(38) || (keyIsDown(40) && keyIsDown(38))) {
+            } if (!keyIsDown(40) && !keyIsDown(38) || (keyIsDown(40) && keyIsDown(38))) {
                 this.vy /= 1.03;
             }
         }

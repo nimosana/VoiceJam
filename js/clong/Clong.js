@@ -20,6 +20,7 @@ class Clong {
         //ball & paddles
         this.ball = new Ball(width / 2, height / 2);
         this.paddles = [new Paddle(width * 0.01565, height * 0.22779, 1), new Paddle(width * 0.01565, height * 0.22779, 2)];
+        this.shiftReleased = true;
     }
 
     setup() {
@@ -60,7 +61,12 @@ class Clong {
         }
         if (mouseIsPressed) {
             this.state = `gameplay`;
+            myVoiceRec.continuous = true;
+            myVoiceRec.interimResults = true;
+            myVoice.speak(`${myBots[botSelected].msgGreeting}`);
         }
+        this.switchVoice();
+
     }
 
     /** displays the gameplay,score and handles the movement/display of the ball & paddles*/
@@ -82,18 +88,25 @@ class Clong {
     endGame() {
         background(0);
         // reset ball & paddles if not done yet
-        if (this.roundEnded) {
-            this.resetForNextRound();
-            this.roundEnded = false;
-        }
+
         // display the game's winner & option to rematch
         textAlign(CENTER, CENTER);
         if (this.lastRoundWinner === 1) {
             fill('cyan');
             text(`Player 1 won the game\n${this.wins1} : ${this.wins2}\nClick to rematch, ESC to leave`, width / 2, height / 4);
+            if (this.roundEnded) {
+                myVoice.speak(myBots[botSelected].msgLostGame);
+            }
         } else if (this.lastRoundWinner === 2) {
             fill('red');
             text(`Player 2 won the game\n${this.wins1} : ${this.wins2}\nClick to rematch, ESC to leave`, width / 2, height / 4);
+            if (this.roundEnded) {
+                myVoice.speak(myBots[botSelected].msgWonGame);
+            }
+        }
+        if (this.roundEnded) {
+            this.resetForNextRound();
+            this.roundEnded = false;
         }
         // display paddles & ball, allow paddle movement for fun
         for (let paddle of this.paddles) {
@@ -104,6 +117,7 @@ class Clong {
         if (mouseIsPressed) {
             this.state = `gameplay`;
         }
+        this.switchVoice();
     }
 
     /** waiting/end state between rounds */
@@ -133,6 +147,7 @@ class Clong {
         if (mouseIsPressed) {
             this.state = `gameplay`;
         }
+        this.switchVoice();
     }
 
     /** resets the paddle and the ball for the next round */
@@ -143,8 +158,14 @@ class Clong {
         this.ball.vy = 0;
         if (this.lastRoundWinner === 1) {
             this.ball.vx = (width * 2.3474E-3);
+            if (this.score1 != 0) {
+                this.tellScore();
+            }
         } else if (this.lastRoundWinner === 2) {
             this.ball.vx = -(width * 2.3474E-3);
+            if (this.score2 != 0) {
+                this.tellScore();
+            }
         }
         for (let paddle of this.paddles) {
             paddle.y = height / 2 - paddle.height / 2;
@@ -160,5 +181,35 @@ class Clong {
         textAlign(RIGHT, TOP);
         fill(`Red`);
         text(this.score2, width * 0.98, 0);
+    }
+
+
+    switchVoice() {
+        push();
+        fill(255);
+        textAlign(CENTER, CENTER);
+        text(`playing against: \n${myBots[botSelected].name}\nSHIFT to switch`, width / 2, height * 0.8);
+        pop();
+        if (keyIsDown(SHIFT) && this.shiftReleased) {
+            botSelected++;
+            if (botSelected >= myBots.length) {
+                botSelected = 0;
+            }
+            myVoice.setPitch(myBots[botSelected].pitch);
+            myVoice.setVoice(myBots[botSelected].lang);
+            // myVoice.cancel();
+            myVoice.speak(myBots[botSelected].msgGreeting);
+            console.log(`bot selected: ${myBots[botSelected].lang} (${myBots[botSelected].name})`);
+            this.shiftReleased = false;
+        }
+    }
+
+
+    tellScore() {
+        if (this.score1 < this.score2) {
+            myVoice.speak(`${this.score2} - ${this.score1}`);
+        } else {
+            myVoice.speak(`${this.score1} - ${this.score2}`);
+        }
     }
 } 
