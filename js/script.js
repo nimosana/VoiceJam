@@ -7,17 +7,22 @@
  */
 
 "use strict";
-let voice = new p5.Speech();
+let backgroundPos = 0;
+setInterval(moveBackground, 50);
+
 let game;
-let needToSpeak = false;
 let clownImage;
-let mostrecentword;
+// movement booleans
 let goUp = false;
 let goDown = false;
+//p5.speech voice synthesizer/recognizer
 let myVoice = new p5.Speech();
 let myVoiceRec = new p5.SpeechRec('en-US', parseResult);
+let mostrecentword;
+// bot selection
 let botSelected = 0;
-
+let cooldown = 0;
+/** the different voices/opponents available in game */
 let myBots = [{
     name: `Gary`,
     lang: `Google UK English Male`,
@@ -26,7 +31,7 @@ let myBots = [{
     msgWonGame: `I win`,
     msgLostGame: `Good game`,
 }, {
-    name: `Camille`,
+    name: `Louise`,
     lang: `Google français`,
     pitch: 1.1,
     msgGreeting: `Bonjour`,
@@ -40,7 +45,7 @@ let myBots = [{
     msgWonGame: `Jaja, gané`,
     msgLostGame: `buena partida`,
 }, {
-    name: `Xi`,
+    name: `Anna`,
     lang: `Google 普通话（中国大陆）`,
     pitch: 1,
     msgGreeting: `你好`,
@@ -78,63 +83,87 @@ let myBots = [{
 }];
 
 
-/**
-Description of preload
-*/
+/** loads the necessary assets */
 function preload() {
     clownImage = loadImage('assets/images/clown.png');
 }
 
 
 /**
-Description of setup
-*/
+Sets up the canvas, voice speech & recognition, then loads default voice*/
 function setup() {
     width = windowWidth * 0.98;
     height = windowHeight * 0.92;
-    myVoiceRec.continuous = true; // do continuous recognition
-    myVoiceRec.interimResults = true; // allow partial recognition (faster, less accurate)
+    myVoiceRec.continuous = true;
+    myVoiceRec.interimResults = true;
     game = new Clong();
     game.setup();
     createCanvas(width, height);
-    myVoiceRec.start();
     strokeWeight(10);
+    myVoiceRec.start();
     myVoice.setPitch(1);
     myVoice.setVoice(myBots[botSelected].lang);
-    console.log(myBots[botSelected].lang)
-    console.log(myVoice.listVoices());
+    // console.log(myBots[botSelected].lang)
+    // console.log(myVoice.listVoices());
 }
 
 
-/**
-Description of draw()
-*/
+/** runs the game and avoids duplicate actions */
 function draw() {
     game.run();
+    cooldown++;
     if (!keyIsDown(SHIFT)) {
         game.shiftReleased = true;
     }
 }
 
-
-function mousePressed() {
-    // myVoice.speak("Haha, I beat you");
+/** Analyzes speech recognition input and performs necessary actions depending on the last word
+ * Manages: up,down,stop,start and the names */
+function parseResult() {
+    mostrecentword = myVoiceRec.resultString.split(' ').pop();
+    if (cooldown > 30) {
+        switch (true) {
+            case mostrecentword === `up`:
+                goUp = true;
+                goDown = false;
+                break;
+            case mostrecentword === `down`:
+                goDown = true;
+                goUp = false;
+                break;
+            case mostrecentword === `stop`:
+                goUp = goDown = false;
+                break;
+            case mostrecentword === `start`:
+                if (game.state === 'title' || game.state === 'endGame' || game.state === 'waiting') {
+                    game.state = 'gameplay';
+                    myVoiceRec.continuous = true;
+                    myVoiceRec.interimResults = true;
+                    if (game.state === `title`) {
+                        myVoice.speak(`${myBots[botSelected].msgGreeting}`);
+                    }
+                }
+                break;
+            case (mostrecentword === `Gary` || mostrecentword === `Louise` || mostrecentword === `Jesus` || mostrecentword === `Anna` ||
+                mostrecentword === `Svetlana` || mostrecentword === `Kelly` || mostrecentword === `pika` || mostrecentword === `pica` || mostrecentword === `Johannes`):
+                // console.log(`testing for ${mostrecentword}`)
+                cooldown = 0;
+                if (mostrecentword === `pica`) { // the word "pika" is tough for the recognition so fix it if its wrong
+                    mostrecentword = `Pika`;
+                }
+                for (let i = 0; i < myBots.length; i++) {
+                    if (myBots[i].name === mostrecentword) {
+                        botSelected = i;
+                        game.setVoice(botSelected);
+                    }
+                }
+                break;
+        }
+        console.log(mostrecentword);
+    }
 }
 
-
-function parseResult() {
-    // recognition system will often append words into phrases.
-    // so hack here is to only use the last word:
-    mostrecentword = myVoiceRec.resultString.split(' ').pop();
-    if (mostrecentword.indexOf("up") !== -1) {
-        goUp = true;
-        goDown = false;
-    }
-    else if (mostrecentword.indexOf("down") !== -1) {
-        goDown = true;
-        goUp = false;
-    } else if (mostrecentword.indexOf("stop") !== -1) {
-        goUp = goDown = false;
-    }
-    console.log(mostrecentword);
+function moveBackground() {
+    backgroundPos++;
+    document.getElementById("body").style.backgroundPosition = `${backgroundPos}px ${backgroundPos}px`
 }

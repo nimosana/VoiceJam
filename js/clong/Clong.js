@@ -3,7 +3,7 @@
  * 
  * Allows the creation of simulations/instances of the clong game,
  * contains every function necessary to run the game
- * Note: the original version was made for exercise 5*/
+ * Note: the original version was made for CART 253 - exercise 5*/
 class Clong {
     /** Creates a runnable instance of the clong game */
     constructor() {
@@ -22,7 +22,7 @@ class Clong {
         this.paddles = [new Paddle(width * 0.01565, height * 0.22779, 1), new Paddle(width * 0.01565, height * 0.22779, 2)];
         this.shiftReleased = true;
     }
-
+    /** initial game setup */
     setup() {
         textSize(width * 0.03);
     }
@@ -46,13 +46,13 @@ class Clong {
         //display text
         fill("white");
         textAlign(CENTER, CENTER);
-        text(`Clong\nClick to start`, width / 2, height / 4);
+        text(`Clong\nClick or say "start"`, width / 2, height / 4);
         fill("cyan");
         textAlign(LEFT, CENTER);
-        text(`Player 1:\nW - Up\nS - Down`, width * 0.02, height / 2);
+        text(`Player 1:\nW - say "Up"\nS - say "Down"`, width * 0.02, height / 2);
         fill("red");
         textAlign(RIGHT, CENTER);
-        text(`Player 2:\nUp arrow\nDown arrow`, width * 0.98, height / 2);
+        text(`Player 2:\n${myBots[botSelected].name}`, width * 0.98, height / 2);
         //display ball/paddles and move paddles
         displayObjAsImage(this.ball, 2, clownImage)
         for (let paddle of this.paddles) {
@@ -93,13 +93,13 @@ class Clong {
         textAlign(CENTER, CENTER);
         if (this.lastRoundWinner === 1) {
             fill('cyan');
-            text(`Player 1 won the game\n${this.wins1} : ${this.wins2}\nClick to rematch, ESC to leave`, width / 2, height / 4);
+            text(`Player 1 won the game\n${this.wins1} : ${this.wins2}\nClick or say "start" to rematch`, width / 2, height / 4);
             if (this.roundEnded) {
                 myVoice.speak(myBots[botSelected].msgLostGame);
             }
         } else if (this.lastRoundWinner === 2) {
             fill('red');
-            text(`Player 2 won the game\n${this.wins1} : ${this.wins2}\nClick to rematch, ESC to leave`, width / 2, height / 4);
+            text(`Player 2 won the game\n${this.wins1} : ${this.wins2}\nClick or say "start" to rematch`, width / 2, height / 4);
             if (this.roundEnded) {
                 myVoice.speak(myBots[botSelected].msgWonGame);
             }
@@ -139,10 +139,10 @@ class Clong {
         textAlign(CENTER, CENTER);
         if (this.lastRoundWinner === 1) {
             fill(`cyan`);
-            text(`Player 1 won the round\nClick to continue`, width / 2, height / 4);
+            text(`Player 1 won the round\nClick or say "start" to continue`, width / 2, height / 4);
         } else if (this.lastRoundWinner === 2) {
             fill(`red`);
-            text(`Player 2 won the round\nClick to continue`, width / 2, height / 4);
+            text(`Player 2 won the round\nClick or say "start" to continue`, width / 2, height / 4);
         }
         if (mouseIsPressed) {
             this.state = `gameplay`;
@@ -183,28 +183,34 @@ class Clong {
         text(this.score2, width * 0.98, 0);
     }
 
-
+    /** Displays the text and manages the SHIFT key to alternate opponent (voice)*/
     switchVoice() {
         push();
         fill(255);
         textAlign(CENTER, CENTER);
-        text(`playing against: \n${myBots[botSelected].name}\nSHIFT to switch`, width / 2, height * 0.8);
+        text(`Playing against: \n${myBots[botSelected].name}\nSHIFT or say the name to switch between:\n Gary, Louise, Jesus, Anna,\n Svetlana, Kelly, Pika, Johannes`, width / 2, height * 0.8);
         pop();
         if (keyIsDown(SHIFT) && this.shiftReleased) {
             botSelected++;
             if (botSelected >= myBots.length) {
                 botSelected = 0;
             }
-            myVoice.setPitch(myBots[botSelected].pitch);
-            myVoice.setVoice(myBots[botSelected].lang);
-            // myVoice.cancel();
-            myVoice.speak(myBots[botSelected].msgGreeting);
-            console.log(`bot selected: ${myBots[botSelected].lang} (${myBots[botSelected].name})`);
+            this.setVoice(botSelected);
             this.shiftReleased = false;
         }
     }
 
+    /** Sets the synthesizer voice to the desired language and pitch, while greeting 
+     * @param bot ->  the number of the bot to use */
+    setVoice(bot) {
+        myVoice.setPitch(myBots[bot].pitch);
+        myVoice.setVoice(myBots[bot].lang);
+        // myVoice.cancel();
+        myVoice.speak(myBots[bot].msgGreeting);
+        console.log(`bot selected: ${myBots[bot].lang} (${myBots[bot].name})`);
+    }
 
+    /** instructs the voice synthesizer to tell the current game's score */
     tellScore() {
         if (this.score1 < this.score2) {
             myVoice.speak(`${this.score2} - ${this.score1}`);

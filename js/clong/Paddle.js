@@ -26,17 +26,14 @@ class Paddle {
         if (this.player === 1) {
             if (keyIsDown(87) && !keyIsDown(83) || goUp) {
                 this.vy -= this.accel;
-            } else if ((keyIsDown(83) && !keyIsDown(87)) || mostrecentword === "down") {
+            } else if ((keyIsDown(83) && !keyIsDown(87)) || goDown) {
                 this.vy += this.accel;
             } else if ((!keyIsDown(87) && !keyIsDown(83)) || (keyIsDown(87) && keyIsDown(83))) {
                 this.vy /= 1.03;
             }
         } else if (this.player === 2) {
-            //player 2 paddle movement (Up/Down arrow keys)
-            // console.log(`ball: ${game.ball.y}`);
-            // let temp = this.y + this.height / 2
-            // console.log(`paddle: ${temp}`);
-            if ((game.ball.y + game.ball.size / 2) <= (this.y + this.height / 2)) {
+            //AI player 2 paddle movement (check ball/paddle height)
+            if ((game.ball.y) <= (this.y + this.height / 2)) {
                 this.vy -= this.accel;
             } else {
                 this.vy += this.accel;
