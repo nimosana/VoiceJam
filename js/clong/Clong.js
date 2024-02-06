@@ -49,7 +49,7 @@ class Clong {
         text(`Clong\nClick or say "start"`, width / 2, height / 4);
         fill("cyan");
         textAlign(LEFT, CENTER);
-        text(`Player 1:\nW - say "Up"\nS - say "Down"`, width * 0.02, height / 2);
+        text(`Player 1:\nW - say "Up"\nS - say "Down"\nimmobilize - say "stop"`, width * 0.02, height / 2);
         fill("red");
         textAlign(RIGHT, CENTER);
         text(`Player 2:\n${myBots[botSelected].name}`, width * 0.98, height / 2);
@@ -80,7 +80,8 @@ class Clong {
         for (let paddle of this.paddles) {
             this.ball.bounce(paddle);
         }
-        displayObjAsImage(this.ball, 2, clownImage);
+        displayRotatingMovingCircle(this.ball);
+        // displayObjAsImage(this.ball, 2, clownImage);
         this.displayScores();
     }
 

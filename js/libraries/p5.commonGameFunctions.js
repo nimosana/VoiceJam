@@ -176,3 +176,15 @@ p5.prototype.randomSpasm = function (obj, odds, intensity) {
         obj.vy = random(-obj.maxSpeed * intensity, obj.maxSpeed * intensity);
     }
 };
+
+/** draws a circle, rotated in the direction it's going
+ * @param obj -> the object to display, ideally a circle */
+p5.prototype.displayRotatingMovingCircle = function (obj) {
+    push();
+    angleMode(DEGREES)
+    let angle = atan2(obj.vy, obj.vx);
+    translate(obj.x, obj.y);
+    rotate(angle - 90);
+    image(obj.texture, -obj.size / 2, -obj.size / 2, obj.size, obj.size);
+    pop();
+};

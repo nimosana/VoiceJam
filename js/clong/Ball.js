@@ -14,6 +14,7 @@ class Ball {
         this.ax = width * 7.82473E-4;
         this.maxspeed = width * 0.0352;
         this.size = width * 0.03123;
+        this.texture = clownImage;
     }
 
     /** move the ball, constrain it to the window and check if it scores */

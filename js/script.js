@@ -162,7 +162,10 @@ function parseResult() {
         console.log(mostrecentword);
     }
 }
-
+function mousePressed() {
+    myVoiceRec.start(); //restart the voice recognition on click, since it always crashes
+}
+/** move the background of the html site */
 function moveBackground() {
     backgroundPos++;
     document.getElementById("body").style.backgroundPosition = `${backgroundPos}px ${backgroundPos}px`
