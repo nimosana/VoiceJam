@@ -162,8 +162,9 @@ function parseResult() {
         console.log(mostrecentword);
     }
 }
+/** restart the voice recognition on click, since it always crashes */
 function mousePressed() {
-    myVoiceRec.start(); //restart the voice recognition on click, since it always crashes
+    myVoiceRec.start();
 }
 /** move the background of the html site */
 function moveBackground() {
