@@ -7,22 +7,24 @@
  */
 
 "use strict";
+//html stuff
 let backgroundPos = 0;
 setInterval(moveBackground, 50);
-
+//game and assets
 let game;
 let clownImage;
 // movement booleans
 let goUp = false;
 let goDown = false;
-//p5.speech voice synthesizer/recognizer
+//p5.speech voice synthesizer/recognizer & eliza
+let eliza = new ElizaBot();
 let myVoice = new p5.Speech();
 let myVoiceRec = new p5.SpeechRec('en-US', parseResult);
-let mostrecentword;
-// bot selection
-let botSelected = 0;
+let mostRecentWord;
+let cleanPhrase;
 let cooldown = 0;
 /** the different voices/opponents available in game */
+let botSelected = 0;
 let myBots = [{
     name: `Gary`,
     lang: `Google UK English Male`,
@@ -81,6 +83,8 @@ let myBots = [{
     msgWonGame: `Ik ben overwinnaar`,
     msgLostGame: `gefeliciteerd`,
 }];
+let taunts = ["Calm down", "chill", "chillax", "chill out", "easy there",
+    "why so angry", "buddy", "ok bud", "bud", "why u mad", "relax", "breathe", "loosen up", "womp womp"];
 
 
 /** loads the necessary assets */
@@ -118,23 +122,35 @@ function draw() {
 }
 
 /** Analyzes speech recognition input and performs necessary actions depending on the last word
- * Manages: up,down,stop,start and the names */
+ * Manages: up,down,stop,start and the names 
+ * Also detects naughty phrases and replies an annoying eliza message*/
 function parseResult() {
-    mostrecentword = myVoiceRec.resultString.split(' ').pop();
+    //naughty phrase detector! 
+    if (myVoiceRec.resultValue && myVoiceRec.resultString.indexOf("*") !== -1 && myVoiceRec.resultConfidence > 0.7) {
+        cleanPhrase = myVoiceRec.resultString;
+        console.log("latest phrase: " + myVoiceRec.resultString)
+        while (cleanPhrase.indexOf("*") !== -1) {
+            cleanPhrase = cleanPhrase.replace("*", "");
+            // console.log("aschek: " + cleanPhrase)
+        }
+        myVoice.speak(`${taunts[Math.floor(Math.random() * taunts.length)]}, ${(eliza.transform(cleanPhrase))}`);
+    }
+    //general commands voice control
+    mostRecentWord = myVoiceRec.resultString.split(' ').pop();
     if (cooldown > 30) {
         switch (true) {
-            case mostrecentword === `up`:
+            case mostRecentWord === `up`:
                 goUp = true;
                 goDown = false;
                 break;
-            case mostrecentword === `down`:
+            case mostRecentWord === `down`:
                 goDown = true;
                 goUp = false;
                 break;
-            case mostrecentword === `stop`:
+            case mostRecentWord === `stop`:
                 goUp = goDown = false;
                 break;
-            case mostrecentword === `start`:
+            case mostRecentWord === `start`:
                 if (game.state === 'title' || game.state === 'endGame' || game.state === 'waiting') {
                     game.state = 'gameplay';
                     myVoiceRec.continuous = true;
@@ -144,28 +160,30 @@ function parseResult() {
                     }
                 }
                 break;
-            case (mostrecentword === `Gary` || mostrecentword === `Louise` || mostrecentword === `Jesus` || mostrecentword === `Anna` ||
-                mostrecentword === `Svetlana` || mostrecentword === `Kelly` || mostrecentword === `pika` || mostrecentword === `pica` || mostrecentword === `Johannes`):
-                // console.log(`testing for ${mostrecentword}`)
+            case (mostRecentWord === `Gary` || mostRecentWord === `Louise` || mostRecentWord === `Jesus` || mostRecentWord === `Anna` ||
+                mostRecentWord === `Svetlana` || mostRecentWord === `Kelly` || mostRecentWord === `pika` || mostRecentWord === `pica` || mostRecentWord === `Johannes`):
+                // console.log(`testing for ${mostRecentWord}`)
                 cooldown = 0;
-                if (mostrecentword === `pica`) { // the word "pika" is tough for the recognition so fix it if its wrong
-                    mostrecentword = `Pika`;
+                if (mostRecentWord === `pica`) { // the word "pika" is tough for the recognition so fix it if its wrong
+                    mostRecentWord = `Pika`;
                 }
                 for (let i = 0; i < myBots.length; i++) {
-                    if (myBots[i].name === mostrecentword) {
+                    if (myBots[i].name === mostRecentWord) {
                         botSelected = i;
                         game.setVoice(botSelected);
                     }
                 }
                 break;
         }
-        console.log(mostrecentword);
+        console.log(mostRecentWord);
     }
 }
+
 /** restart the voice recognition on click, since it always crashes */
 function mousePressed() {
     myVoiceRec.start();
 }
+
 /** move the background of the html site */
 function moveBackground() {
     backgroundPos++;
